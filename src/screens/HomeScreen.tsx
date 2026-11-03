@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
   useFocusEffect(() => {
     if (Platform.isTV) {
-      TVEventControl.disableTVMenuKey();
+      TVEventControl.enableTVMenuKey();
     }
   });
 
@@ -40,6 +40,7 @@ export default function HomeScreen() {
 
   return (
     <MediaFeed
+      largeTVShelves
       error={error}
       items={content}
       loading={loading}

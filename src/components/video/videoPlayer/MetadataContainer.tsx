@@ -109,6 +109,15 @@ export default function MetadataContainer({
             icon={"playlist-add"}
             onPress={metadata.onSaveVideo}
           />
+          {metadata.onShowComments ? (
+            <MetadataButton
+              onFocus={onControlFocus}
+              accessibilityLabel={t("video.comments.title")}
+              label={t("video.comments.title")}
+              icon={"chat-bubble-outline"}
+              onPress={metadata.onShowComments}
+            />
+          ) : null}
           {metadata.onShowDetails ? (
             <MetadataButton
               onFocus={onControlFocus}

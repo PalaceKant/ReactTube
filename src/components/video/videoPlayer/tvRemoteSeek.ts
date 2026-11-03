@@ -4,7 +4,10 @@ import type {TVRemoteEvent} from "@/ui/tv/tvRemoteDispatcher";
 export const TV_SEEK_STEP_SECONDS = 15;
 
 /** How often a held direction key advances the scrub preview. */
-export const TV_SCRUB_TICK_MS = 150;
+export const TV_SCRUB_TICK_MS = 250;
+
+/** A held direction advances time in predictable ten-second jumps. */
+export const TV_SCRUB_STEP_SECONDS = 10;
 
 /**
  * Taps that follow each other within this window build on the previous target
@@ -192,25 +195,6 @@ export function clampSeekTime(seconds: number, duration: number): number {
     return seconds;
   }
   return Math.min(seconds, Math.max(0, duration - END_MARGIN_SECONDS));
-}
-
-/**
- * Seconds one scrub tick moves. The step grows with the video length, so a
- * short clip stays precise and a long stream is still crossed in seconds, and
- * it speeds up the longer the key is held.
- *
- * The old fixed step of 5 % of the bar per tick crossed a whole video in four
- * seconds no matter its length, which made precise positioning impossible.
- */
-export function getScrubStepSeconds(duration: number, heldMs: number): number {
-  const safeDuration = duration > 0 ? duration : 0;
-  if (heldMs < 1500) {
-    return Math.max(2, safeDuration * 0.004);
-  }
-  if (heldMs < 4000) {
-    return Math.max(5, safeDuration * 0.01);
-  }
-  return Math.max(10, safeDuration * 0.025);
 }
 
 /** Position of a time on a seek bar of the given width. */

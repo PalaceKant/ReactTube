@@ -158,28 +158,29 @@ function MediaCardTV({
             gap: theme.spacing.sm,
             padding: theme.spacing.sm,
             borderRadius: theme.radii.panel,
+            // Playing state colors the card; focus outlines only its thumbnail.
+            backgroundColor: selected
+              ? theme.colors.surfaceRaised
+              : "transparent",
+            transform: [{scale}],
+          },
+        ]}>
+        <View
+          style={{
             borderWidth: focusBorderWidth,
             borderColor: focused
               ? theme.colors.focus
               : theme.colors.focusResting,
-            // The playing entry stays raised while the remote is elsewhere;
-            // focus raises it further, so both states remain distinguishable.
-            backgroundColor: focused
-              ? selected
-                ? theme.colors.surfacePressed
-                : theme.colors.surfaceRaised
-              : selected
-                ? theme.colors.surfaceRaised
-                : "transparent",
-            transform: [{scale}],
-          },
-        ]}>
-        <MediaCardThumbnail
-          highlightLabel={selected ? selectedLabel : undefined}
-          model={model}
-          scale={"tv"}
-          targetWidth={typeof width === "number" ? width : undefined}
-        />
+            borderRadius: theme.radii.panel,
+            overflow: "hidden",
+          }}>
+          <MediaCardThumbnail
+            highlightLabel={selected ? selectedLabel : undefined}
+            model={model}
+            scale={"tv"}
+            targetWidth={typeof width === "number" ? width : undefined}
+          />
+        </View>
         <View style={[styles.metadata, {minHeight: textBlockHeight}]}>
           <AppText numberOfLines={2} variant={"titleSmall"}>
             {model.title}

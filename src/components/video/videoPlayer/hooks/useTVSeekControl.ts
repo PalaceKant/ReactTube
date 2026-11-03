@@ -11,10 +11,10 @@ import {Platform} from "react-native";
 import {
   clampSeekTime,
   createRemoteSeekInterpreter,
-  getScrubStepSeconds,
   SeekDirection,
   SeekSource,
   TV_SCRUB_TICK_MS,
+  TV_SCRUB_STEP_SECONDS,
   TV_SEEK_CHAIN_WINDOW_MS,
   TV_SEEK_STEP_SECONDS,
 } from "../tvRemoteSeek";
@@ -102,16 +102,11 @@ export default function useTVSeekControl({
   const startScrub = useCallback(
     (direction: SeekDirection) => {
       stopScrub(false);
-      const startedAt = Date.now();
       const scrub: Scrub = {
         time: getSeekBase(),
         timer: setInterval(() => {
-          const step = getScrubStepSeconds(
-            durationRef.current,
-            Date.now() - startedAt,
-          );
           scrub.time = clampSeekTime(
-            scrub.time + direction * step,
+            scrub.time + direction * TV_SCRUB_STEP_SECONDS,
             durationRef.current,
           );
           setScrubTime(scrub.time);

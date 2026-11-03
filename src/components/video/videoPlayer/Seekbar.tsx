@@ -57,9 +57,10 @@ export default function Seekbar({
         />
       </View>
       <View
-        pointerEvents={"none"}
+        pointerEvents={"box-none"}
         style={[styles.handle, {left: seekerPosition}]}>
         <Pressable
+          hasTVPreferredFocus
           ref={handleRef}
           onPress={onPress}
           onBlur={() => {

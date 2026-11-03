@@ -26,6 +26,7 @@ import {useAppTheme} from "@/ui/theme";
 import {TVFocusRegion} from "@/ui/tv";
 
 export interface MediaFeedProps {
+  largeTVShelves?: boolean;
   items: FeedItem[];
   /** True while the first page is loading, which renders card skeletons. */
   loading?: boolean;
@@ -50,6 +51,7 @@ export interface MediaFeedProps {
  * supplies data and the actions behind those states.
  */
 export function MediaFeed({
+  largeTVShelves = false,
   items,
   loading = false,
   error,
@@ -80,7 +82,7 @@ export function MediaFeed({
     leadingInset,
     performance,
     onLayout,
-  } = useFeedGeometry();
+  } = useFeedGeometry(largeTVShelves);
   const {loadingMore, handleEndReached} = useFeedPagination(
     onEndReached,
     items.length > 0,
@@ -151,7 +153,8 @@ export function MediaFeed({
               {ListHeaderComponent}
               {/* A remote cannot pull to refresh, so TV gets a focusable action. */}
               {onRefresh && Platform.isTV ? (
-                <View style={{padding: theme.spacing.sm}}>
+                <View
+                  style={{padding: theme.spacing.sm, alignSelf: "flex-end"}}>
                   <AppButton
                     label={t("feed.refresh")}
                     loading={refreshing}

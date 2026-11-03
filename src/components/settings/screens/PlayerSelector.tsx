@@ -1,4 +1,4 @@
-import {StyleSheet} from "react-native";
+import {Platform, StyleSheet} from "react-native";
 
 import {AppSettings, useAppData} from "../../../context/AppDataContext";
 import {SettingsSelectorItem} from "../SettingsItem";
@@ -40,19 +40,21 @@ export default function PlayerTypeSelectorScreen() {
     <SettingsSection
       style={[styles.container, {backgroundColor: theme.colors.background}]}
       sectionTitle={t("settings.playerTypes")}>
-      {Object.values(playerTypes).map(v => (
-        <SettingsSelectorItem
-          key={v.key}
-          label={t(v.labelKey)}
-          selected={player.key === v.key}
-          onPress={() => {
-            updateSettings({
-              vlcEnabled: !(v.key === "nativeOverlay" || v.key === "native"),
-              ownOverlayEnabled: v.key === "nativeOverlay",
-            });
-          }}
-        />
-      ))}
+      {Object.values(playerTypes)
+        .filter(v => !Platform.isTV || v.key !== "native")
+        .map(v => (
+          <SettingsSelectorItem
+            key={v.key}
+            label={t(v.labelKey)}
+            selected={player.key === v.key}
+            onPress={() => {
+              updateSettings({
+                vlcEnabled: !(v.key === "nativeOverlay" || v.key === "native"),
+                ownOverlayEnabled: v.key === "nativeOverlay",
+              });
+            }}
+          />
+        ))}
     </SettingsSection>
   );
 }
@@ -66,7 +68,7 @@ const styles = StyleSheet.create({
 export function parsePlayerType(appSettings: AppSettings) {
   if (appSettings.vlcEnabled) {
     return playerTypes["vlc"];
-  } else if (appSettings.ownOverlayEnabled) {
+  } else if (Platform.isTV || appSettings.ownOverlayEnabled) {
     return playerTypes["nativeOverlay"];
   } else {
     return playerTypes["native"];

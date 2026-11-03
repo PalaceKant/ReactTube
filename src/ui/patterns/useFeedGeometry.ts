@@ -42,7 +42,7 @@ export interface FeedGeometry {
  * That measured width also decides the column count, so a feed in a narrow
  * column lays itself out as the narrow feed it is.
  */
-export function useFeedGeometry(): FeedGeometry {
+export function useFeedGeometry(largeTVShelves = false): FeedGeometry {
   const {layout, railWidth, insets, contentInsets} = useAppChrome();
   const {width: windowWidth} = useWindowDimensions();
   const [measuredWidth, setMeasuredWidth] = useState(() =>
@@ -50,6 +50,10 @@ export function useFeedGeometry(): FeedGeometry {
   );
   const feedLayout = getFeedLayoutClass(measuredWidth, layout);
   const metrics = getFeedMetrics(feedLayout);
+  if (largeTVShelves && feedLayout === "tv") {
+    // Two full cards and a preview of the next one, scaled to the TV surface.
+    metrics.shelfCardWidth = Math.max(320, Math.min(720, windowWidth * 0.36));
+  }
   const contentPadding = getFeedContentPadding(
     feedLayout,
     metrics,

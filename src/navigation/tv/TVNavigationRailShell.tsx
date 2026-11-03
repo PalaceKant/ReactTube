@@ -1,6 +1,12 @@
-import {useNavigation, useNavigationState} from "@react-navigation/native";
+import {
+  useIsFocused,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
+  BackHandler,
+  TVEventControl,
   StyleSheet,
   TVFocusGuideView,
   useWindowDimensions,
@@ -31,7 +37,6 @@ import {
   type TVRailDestinationKey,
 } from "@/ui/navigation";
 import {useAppTheme} from "@/ui/theme";
-import {useTVRemoteEvent} from "@/ui/tv";
 
 /**
  * Focus can leave a rail item shortly before the next one reports focus. The
@@ -68,7 +73,7 @@ export function TVNavigationRailShell({children}: TVNavigationRailShellProps) {
   const signedIn = loginData?.accounts?.length > 0;
 
   const [expanded, setExpanded] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const screenFocused = useIsFocused();
   const [focusedKey, setFocusedKey] = useState<TVRailDestinationKey>();
   const [lastFocusedKey, setLastFocusedKey] =
     useState<TVRailDestinationKey>("home");
@@ -83,7 +88,7 @@ export function TVNavigationRailShell({children}: TVNavigationRailShellProps) {
     () => getTVRailDestinations(signedIn),
     [signedIn],
   );
-  const railState = resolveTVRailState(hidden, expanded);
+  const railState = resolveTVRailState(false, expanded);
   const duration = reduceMotion ? 0 : theme.motion.duration.standard;
   // The rail is chrome at the screen edge: it keeps the vertical margin, where
   // a crop would take a whole destination, and only half the horizontal one —
@@ -152,22 +157,22 @@ export function TVNavigationRailShell({children}: TVNavigationRailShellProps) {
   }, [cancelCollapse]);
 
   useEffect(() => {
-    // A screen that hid the rail must not keep it hidden for the next screen.
-    setHidden(false);
-  }, [activeRouteName]);
-
-  useTVRemoteEvent(event => {
-    if (hidden && event.eventType === "left") {
-      // Bring a hidden rail back so focus can never get stuck in the content.
-      setHidden(false);
-      return;
-    }
-
-    // Back closes the rail before it leaves the current screen.
-    if (expanded && event.eventType === "menu") {
-      collapse();
-    }
-  });
+    if (!screenFocused) return;
+    TVEventControl.enableTVMenuKey();
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        // The first Back opens navigation. A second Back from the rail can exit.
+        if (focusedKey !== undefined) return false;
+        cancelCollapse();
+        setExpanded(true);
+        const target = itemRefs.current[selectedKey ?? lastFocusedKey];
+        target?.requestTVFocus?.();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [screenFocused, focusedKey, selectedKey, lastFocusedKey, cancelCollapse]);
 
   const openDestination = useCallback(
     (key: TVRailDestinationKey) => {
@@ -224,7 +229,6 @@ export function TVNavigationRailShell({children}: TVNavigationRailShellProps) {
           setFocusedKey(key);
           setLastFocusedKey(key);
           setExpanded(true);
-          setHidden(false);
         }}
         onPress={() => openDestination(key)}
         railWidth={railWidth}
@@ -237,7 +241,7 @@ export function TVNavigationRailShell({children}: TVNavigationRailShellProps) {
   };
 
   return (
-    <DrawerContextProvider onScreenFocused={collapse} setHideDrawer={setHidden}>
+    <DrawerContextProvider onScreenFocused={collapse} setHideDrawer={collapse}>
       <View style={[styles.root, {backgroundColor: theme.colors.background}]}>
         <Animated.View
           style={[
@@ -302,6 +306,8 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   rail: {
+    minWidth: tvRailMetrics.collapsedWidth,
+    zIndex: 1,
     position: "absolute",
     top: 0,
     bottom: 0,

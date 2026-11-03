@@ -63,6 +63,7 @@ export interface VideoMetadata {
   onRefresh?: () => void;
   /** Opens the side panel. Left out where a surface has none. */
   onShowDetails?: () => void;
+  onShowComments?: () => void;
 }
 
 // TODO: Use own types
@@ -437,8 +438,8 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
     );
 
     const {scrubTime} = useTVSeekControl({
-      seekerFocused: seekerFocus,
-      active: remoteActive,
+      seekerFocused: seekerFocus || !showControls,
+      active: remoteActive && !endscreenBrowsing,
       duration,
       currentTime,
       seek: seekVideo,

@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   clampSeekTime,
   createRemoteSeekInterpreter,
-  getScrubStepSeconds,
+  TV_SCRUB_STEP_SECONDS,
   getSeekerPositionForTime,
 } from "../src/components/video/videoPlayer/tvRemoteSeek.ts";
 
@@ -133,15 +133,20 @@ test("clamps seek targets into the playable range", () => {
   assert.equal(clampSeekTime(120, 0), 120);
 });
 
-test("scrub steps grow with video length and hold time", () => {
-  const short = getScrubStepSeconds(60, 0);
-  const longVideo = getScrubStepSeconds(3600, 0);
-  const longHeld = getScrubStepSeconds(3600, 5000);
-
-  assert.equal(short, 2);
-  assert.ok(longVideo > short);
-  assert.ok(longHeld > longVideo);
-  assert.equal(getScrubStepSeconds(0, 0), 2);
+test("held arrows move through timestamps and stop at either video boundary", () => {
+  let time = 90;
+  for (let tick = 0; tick < 4; tick++) {
+    time = clampSeekTime(time + TV_SCRUB_STEP_SECONDS, 150);
+  }
+  assert.equal(time, 130);
+  for (let tick = 0; tick < 10; tick++) {
+    time = clampSeekTime(time + TV_SCRUB_STEP_SECONDS, 150);
+  }
+  assert.equal(time, 149);
+  for (let tick = 0; tick < 20; tick++) {
+    time = clampSeekTime(time - TV_SCRUB_STEP_SECONDS, 150);
+  }
+  assert.equal(time, 0);
 });
 
 test("maps a time onto the seek bar and keeps it on the bar", () => {

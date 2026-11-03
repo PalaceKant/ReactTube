@@ -1,7 +1,7 @@
 import {useFocusEffect} from "@react-navigation/native";
 import {NativeStackScreenProps} from "@react-navigation/native-stack";
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {StyleSheet, View, TVEventControl} from "react-native";
+import {Platform, StyleSheet, View, TVEventControl} from "react-native";
 
 import VideoComponent from "../components/VideoComponent";
 import EndCard from "../components/video/EndCard";
@@ -74,6 +74,9 @@ export default function VideoScreen({route, navigation}: Props) {
   const [ended, setEnded] = useState(false);
 
   const {appSettings} = useAppData();
+  // TV needs app controls for comments and time-based remote seeking.
+  const useAppControls =
+    Platform.isTV || appSettings.ownOverlayEnabled || appSettings.vlcEnabled;
   const {prepare: prepareSidePanel} = useVideoSidePanel();
   const {t} = useTranslation();
   const detailModel = useMemo(
@@ -102,7 +105,7 @@ export default function VideoScreen({route, navigation}: Props) {
   useTVRemoteEvent(event => {
     // LOGGER.debug("TV Event: ", event.eventType);
     // Skip on own overlay enabled!
-    if (appSettings.ownOverlayEnabled) {
+    if (useAppControls) {
       return;
     }
     if (event.eventType === "longDown" || event.eventType === "longSelect") {
@@ -160,7 +163,7 @@ export default function VideoScreen({route, navigation}: Props) {
 
   return (
     <View style={styles.playerRoot}>
-      {appSettings.ownOverlayEnabled || appSettings.vlcEnabled ? (
+      {useAppControls ? (
         <VideoPlayer
           // @ts-ignore Ignore mutable ref issue
           ref={videoPlayerRef}
@@ -227,6 +230,16 @@ export default function VideoScreen({route, navigation}: Props) {
               refresh(
                 await videoPlayerRef.current?.getCurrentPositionSeconds?.(),
               );
+            },
+            onShowComments: () => {
+              if (!detailModel) return;
+              prepareSidePanel({
+                videoId,
+                model: detailModel,
+                queueEntries: YTVideoInfo.playlist?.content ?? [],
+                initialTab: "comments",
+              });
+              navigation.navigate("VideoPlayerInfo");
             },
             onShowDetails: () => {
               if (!detailModel) {

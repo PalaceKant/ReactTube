@@ -3,11 +3,13 @@ import {Image} from "expo-image";
 import {useState} from "react";
 import {Pressable, StyleSheet} from "react-native";
 
+import {AppText} from "@/ui/components";
 import {useAppTheme} from "@/ui/theme";
 
 type MaterialIconName = React.ComponentProps<typeof MaterialIcons>["name"];
 
 interface MetadataButtonProps {
+  label?: string;
   imageUrl?: string;
   /** Material icon name; the avatar variant is used when this is left out. */
   icon?: string;
@@ -23,6 +25,7 @@ interface MetadataButtonProps {
  * guess which control it is on.
  */
 export function MetadataButton({
+  label,
   imageUrl,
   icon,
   accessibilityLabel,
@@ -51,6 +54,16 @@ export function MetadataButton({
       onPress={onPress}
       style={[
         styles.container,
+        label
+          ? {
+              width: "auto",
+              aspectRatio: undefined,
+              minHeight: 55,
+              paddingHorizontal: theme.spacing.md,
+              flexDirection: "row",
+              gap: theme.spacing.sm,
+            }
+          : undefined,
         {
           marginHorizontal: theme.spacing.xs,
           borderRadius: theme.radii.round,
@@ -77,6 +90,11 @@ export function MetadataButton({
         // the first moments without one. An empty circle reads as broken.
         <MaterialIcons color={foreground} name={"person"} size={28} />
       )}
+      {label ? (
+        <AppText style={{color: foreground}} variant={"bodySmall"}>
+          {label}
+        </AppText>
+      ) : null}
     </Pressable>
   );
 }
