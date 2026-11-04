@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
   },
   panel: {
-    width: 760,
+    width: 960,
     maxWidth: "90%",
     padding: 32,
     gap: 16,
@@ -127,6 +127,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   row: {flexDirection: "row", gap: 24},
-  label: {width: 220},
+  label: {width: 280},
   value: {flex: 1},
 });

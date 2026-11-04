@@ -31,12 +31,12 @@ export const phoneTypography: TypographyScale = {
 };
 
 export const tvTypography: TypographyScale = {
-  display: {fontSize: 48, lineHeight: 56, fontWeight: "700", maxLines: 2},
-  titleLarge: {fontSize: 36, lineHeight: 44, fontWeight: "700", maxLines: 2},
-  titleMedium: {fontSize: 30, lineHeight: 38, fontWeight: "600", maxLines: 2},
-  titleSmall: {fontSize: 24, lineHeight: 32, fontWeight: "600", maxLines: 2},
-  body: {fontSize: 24, lineHeight: 34, fontWeight: "400", maxLines: 3},
-  bodySmall: {fontSize: 20, lineHeight: 28, fontWeight: "400", maxLines: 2},
-  label: {fontSize: 20, lineHeight: 28, fontWeight: "600", maxLines: 1},
-  labelSmall: {fontSize: 18, lineHeight: 24, fontWeight: "600", maxLines: 1},
+  display: {fontSize: 56, lineHeight: 66, fontWeight: "700", maxLines: 2},
+  titleLarge: {fontSize: 44, lineHeight: 54, fontWeight: "700", maxLines: 2},
+  titleMedium: {fontSize: 38, lineHeight: 48, fontWeight: "700", maxLines: 2},
+  titleSmall: {fontSize: 32, lineHeight: 42, fontWeight: "600", maxLines: 2},
+  body: {fontSize: 30, lineHeight: 42, fontWeight: "400", maxLines: 3},
+  bodySmall: {fontSize: 26, lineHeight: 36, fontWeight: "400", maxLines: 2},
+  label: {fontSize: 26, lineHeight: 36, fontWeight: "600", maxLines: 1},
+  labelSmall: {fontSize: 24, lineHeight: 32, fontWeight: "600", maxLines: 1},
 };

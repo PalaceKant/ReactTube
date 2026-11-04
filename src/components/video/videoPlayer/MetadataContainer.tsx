@@ -176,16 +176,17 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     alignSelf: "center",
-    flexDirection: "row",
+    flexDirection: Platform.isTV ? "column" : "row",
   },
   titleMetadata: {
-    maxWidth: "40%",
+    maxWidth: Platform.isTV ? "80%" : "40%",
   },
   spacer: {
-    flex: 1,
+    flex: Platform.isTV ? 0 : 1,
   },
   buttonMetadata: {
-    alignSelf: "flex-end",
+    alignSelf: Platform.isTV ? "flex-start" : "flex-end",
     flexDirection: "row",
+    flexWrap: "wrap",
   },
 });

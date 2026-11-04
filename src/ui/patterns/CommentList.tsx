@@ -19,7 +19,7 @@ import {useTranslation} from "@/localization";
 import {AppText, EmptyState, ErrorState, Skeleton} from "@/ui/components";
 import {useAppTheme} from "@/ui/theme";
 
-const avatarSize = 36;
+const avatarSize = Platform.isTV ? 48 : 36;
 const skeletonCount = 4;
 
 interface CommentListProps {
@@ -113,7 +113,7 @@ export function CommentList({
           const remaining =
             contentSize.height - contentOffset.y - layoutMeasurement.height;
 
-          if (remaining < layoutMeasurement.height) {
+          if (!loadingMore && remaining < layoutMeasurement.height) {
             onEndReached();
           }
         }}
@@ -174,7 +174,7 @@ interface CommentRowProps {
   comment: YTComment;
 }
 
-function CommentRow({comment}: CommentRowProps) {
+const CommentRow = React.memo(function CommentRow({comment}: CommentRowProps) {
   const {theme} = useAppTheme();
   const {t} = useTranslation();
   const [focused, setFocused] = useState(false);
@@ -236,7 +236,7 @@ function CommentRow({comment}: CommentRowProps) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   empty: {

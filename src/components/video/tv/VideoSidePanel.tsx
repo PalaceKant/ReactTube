@@ -27,7 +27,7 @@ interface VideoSidePanelProps {
 }
 
 /**
- * Detail panel of the TV player. It takes the right third of the screen and
+ * Detail panel of the TV player. It takes the trailing portion of the screen and
  * leaves the video playing beside it, which is the whole point of a panel here:
  * on a TV, reading the description must not mean leaving the video.
  *
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     end: 0,
-    width: "36%",
+    width: "42%",
   },
   header: {
     flexDirection: "row",

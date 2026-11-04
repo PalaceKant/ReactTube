@@ -41,7 +41,7 @@ interface MediaCardThumbnailProps {
  * Thumbnail, badges, watch progress, and the image error state. Shared by the
  * touch and TV cards so a badge never appears on only one surface.
  */
-export function MediaCardThumbnail({
+export const MediaCardThumbnail = React.memo(function MediaCardThumbnail({
   model,
   scale,
   targetWidth,
@@ -191,7 +191,7 @@ export function MediaCardThumbnail({
       ) : null}
     </View>
   );
-}
+});
 
 interface BadgeProps {
   badge: MediaCardBadge;

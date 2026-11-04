@@ -74,13 +74,13 @@ function MediaCardTV({
     [element, t],
   );
 
-  // Two title lines plus one metadata line, reserved whether the entry fills
+  // Two title lines plus two metadata lines, reserved whether the entry fills
   // them or not. Without the reservation a one-line title makes the card, and
   // with it the focus outline, visibly shorter than its neighbors in the same
   // row — which reads as the outline changing size while focus moves.
   const textBlockHeight =
     theme.typography.titleSmall.lineHeight * 2 +
-    theme.typography.bodySmall.lineHeight;
+    theme.typography.bodySmall.lineHeight * 2;
 
   /** Reserved in every state so focus never changes the card geometry. */
   const focusBorderWidth = theme.controls.focusBorderWidth;
@@ -187,7 +187,7 @@ function MediaCardTV({
           </AppText>
           <AppText
             color={"textSecondary"}
-            numberOfLines={1}
+            numberOfLines={2}
             variant={"bodySmall"}>
             {model.metadataLine}
           </AppText>
