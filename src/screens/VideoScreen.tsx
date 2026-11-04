@@ -25,6 +25,7 @@ import {ErrorState} from "@/ui/components";
 import {VideoDetailSkeleton, createVideoDetailViewModel} from "@/ui/patterns";
 import {useTVRemoteEvent} from "@/ui/tv";
 import {formatResolutionLabel} from "@/utils/PlaybackSize";
+import {shouldPauseTVVideoOnBlur} from "@/utils/tvPlaybackPolicy";
 
 type Props = NativeStackScreenProps<RootStackParamList, "VideoScreen">;
 
@@ -95,7 +96,10 @@ export default function VideoScreen({route, navigation}: Props) {
   useEffect(() => {
     return navigation.addListener("blur", () => {
       setShowEndCard(false);
-      videoPlayerRef.current?.pause();
+      const state = navigation.getState();
+      if (shouldPauseTVVideoOnBlur(state.routes[state.index]?.name)) {
+        videoPlayerRef.current?.pause();
+      }
     });
   }, [navigation]);
 
@@ -255,6 +259,9 @@ export default function VideoScreen({route, navigation}: Props) {
             },
           }}
           videoID={YTVideoInfo.id}
+          storyboard={YTVideoInfo.storyboard}
+          playbackSource={playbackSource}
+          playbackEngine={appSettings.vlcEnabled ? "VLC" : "AVPlayer"}
           // The end card is a native modal above the player.
           remoteEnabled={!showEndCard}
           onProgress={data => {

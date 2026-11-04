@@ -28,6 +28,7 @@ export type PlaybackSourceKind =
 export type PlaybackPlayer = "native" | "vlc";
 
 export interface PlaybackStep {
+  format?: import("@/utils/PlaybackFormat").PlaybackFormat;
   uri: string;
   kind: PlaybackSourceKind;
   /** Separate audio stream that plays alongside `uri` (VLC step only). */
@@ -86,7 +87,11 @@ const VLC_ORDER: PlaybackSourceKind[] = ["vlc", "youtube-hls", "progressive"];
  */
 export function buildPlaybackLadder(
   sources: {
-    vlc?: {videoUrl: string; audioUrl?: string};
+    vlc?: {
+      videoUrl: string;
+      audioUrl?: string;
+      format?: import("@/utils/PlaybackFormat").PlaybackFormat;
+    };
     sabrHlsUrl?: string;
     generatedHlsUrl?: string;
     youtubeHlsUrl?: string;
@@ -115,6 +120,9 @@ export function buildPlaybackLadder(
     )
     .map(step => ({
       ...step,
+      ...(step.kind === "vlc" && sources.vlc?.format
+        ? {format: sources.vlc.format}
+        : {}),
       ...(step.kind === "vlc" && sources.vlc?.audioUrl
         ? {audioUri: sources.vlc.audioUrl}
         : {}),

@@ -27,8 +27,11 @@ import {getSeekerPositionForTime} from "./tvRemoteSeek";
 import {usePanResponders} from "./usePanResponders";
 
 import {isEndscreenShown} from "@/components/video/endcard/endscreenModel";
+import {PlaybackInfoPanel} from "@/components/video/tv/PlaybackInfoPanel";
 import {useVideoPlayerSettings} from "@/components/video/videoPlayer/settings/VideoPlayerSettingsContext";
+import type {YTStoryboard} from "@/extraction/storyboard";
 import {useTVRemoteEvent} from "@/ui/tv";
+import type {PlaybackStep} from "@/utils/PlaybackLadder";
 import {formatResolutionLabel, PlaybackSize} from "@/utils/PlaybackSize";
 import {useSponsorBlock} from "@/utils/SponsorBlockProvider";
 import {SubtitleTrackList} from "@/utils/Subtitles";
@@ -64,6 +67,7 @@ export interface VideoMetadata {
   /** Opens the side panel. Left out where a surface has none. */
   onShowDetails?: () => void;
   onShowComments?: () => void;
+  onShowPlaybackInfo?: () => void;
 }
 
 // TODO: Use own types
@@ -98,6 +102,9 @@ export interface VideoPlayerRefs {
 }
 
 interface VideoPlayerProps<T> {
+  storyboard?: YTStoryboard;
+  playbackSource?: PlaybackStep;
+  playbackEngine?: string;
   VideoComponent: typeof React.Component<
     VideoComponentType<T>,
     VideoComponentRefType
@@ -178,6 +185,21 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
     const [duration, setDuration] = useState(0);
 
     const [resolution, setResolution] = useState<string>();
+    const [playbackSize, setPlaybackSize] = useState<PlaybackSize>();
+    const [playbackInfoVisible, setPlaybackInfoVisible] = useState(false);
+    const closePlaybackInfo = useCallback(
+      () => setPlaybackInfoVisible(false),
+      [],
+    );
+    useEffect(() => {
+      // A fallback must not display the previous stream's resolution.
+      setPlaybackSize(undefined);
+      setResolution(undefined);
+    }, [
+      props.videoID,
+      props.VideoComponentProps.url,
+      props.VideoComponentProps.playbackAttemptKey,
+    ]);
 
     const constrainToSeekerMinMax = useCallback(
       (val = 0) => {
@@ -335,7 +357,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
     // this screen. The player kept reacting to the remote behind them, so
     // browsing a menu revealed the controls or seeked the video underneath.
     const screenFocused = useIsFocused();
-    const remoteActive = screenFocused && remoteEnabled;
+    const remoteActive = screenFocused && remoteEnabled && !playbackInfoVisible;
 
     // Back leaves browse mode before it leaves the screen. On tvOS the menu
     // key reaches React Navigation through `BackHandler`, and the listener
@@ -437,7 +459,8 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
       [],
     );
 
-    const {scrubTime} = useTVSeekControl({
+    const {scrubTime, previewTime} = useTVSeekControl({
+      sourceKey: props.VideoComponentProps.playbackAttemptKey ?? props.videoID,
       seekerFocused: seekerFocus || !showControls,
       active: remoteActive && !endscreenBrowsing,
       duration,
@@ -448,10 +471,10 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
 
     // While a held key scrubs, the bar and the timer preview the release
     // target; the video keeps playing until the seek is committed.
-    const displayedTime = scrubTime ?? currentTime;
+    const displayedTime = previewTime ?? currentTime;
     const displayedSeekerPosition =
-      scrubTime !== undefined
-        ? getSeekerPositionForTime(scrubTime, duration, seekerWidth)
+      previewTime !== undefined
+        ? getSeekerPositionForTime(previewTime, duration, seekerWidth)
         : seekerPosition;
 
     const {clearControlTimeout, resetControlTimeout, setControlTimeout} =
@@ -547,9 +570,14 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
           onEnd={_onEnd}
           onSeek={_onSeek}
           onError={() => {}}
-          onPlaybackSizeChange={size =>
-            setResolution(formatResolutionLabel(size))
-          }
+          onPlaybackSizeChange={size => {
+            setResolution(formatResolutionLabel(size));
+            setPlaybackSize(previous =>
+              previous?.width === size.width && previous?.height === size.height
+                ? previous
+                : size,
+            );
+          }}
           onAudioTracks={tracks => {
             setLanguages(tracks.audioTracks);
           }}
@@ -584,7 +612,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             animations={animations}
             resetControlTimeout={resetControlTimeout}
             seekerFillWidth={
-              scrubTime !== undefined
+              previewTime !== undefined
                 ? displayedSeekerPosition
                 : seekerFillWidth
             }
@@ -597,7 +625,14 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             currentTime={displayedTime}
             showDuration
             bottomContainer={bottomContainer}
-            metadata={props.metadata}
+            metadata={{
+              ...props.metadata,
+              onShowPlaybackInfo: props.playbackEngine
+                ? () => setPlaybackInfoVisible(true)
+                : undefined,
+            }}
+            storyboard={props.storyboard}
+            previewTime={remoteActive ? previewTime : undefined}
             resolution={resolution}
             showControls={showControls}
             setPaused={setPaused}
@@ -606,6 +641,14 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             onJumpToStart={() => _videoRef.current?.seek(0)}
           />
         </PlaybackTimeContext.Provider>
+        <PlaybackInfoPanel
+          visible={playbackInfoVisible}
+          size={playbackSize}
+          source={props.playbackSource}
+          engine={props.playbackEngine}
+          speed={speed}
+          onClose={closePlaybackInfo}
+        />
       </View>
     );
   },

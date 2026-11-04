@@ -14,13 +14,18 @@ import BottomContainer from "./BottomContainer";
 import MetadataContainer from "./MetadataContainer";
 import {NullControl} from "./NullControl";
 import Seekbar from "./Seekbar";
+import {StoryboardPreview, SEEK_PREVIEW_WIDTH} from "./StoryboardPreview";
 import {Timer} from "./Timer";
 import {VideoMetadata} from "./VideoPlayer";
 import useAnimatedBottomControls from "./hooks/useAnimatedBottomControls";
 import {useAnimations} from "./hooks/useAnimations";
 import {calculateTime} from "./utils";
 
+import type {YTStoryboard} from "@/extraction/storyboard";
+
 interface BottomControlsProps {
+  storyboard?: YTStoryboard;
+  previewTime?: number;
   animations: ReturnType<typeof useAnimations>;
   panHandlers: PanResponderInstance;
   seekColor: string;
@@ -55,6 +60,8 @@ interface BottomControlsProps {
 }
 
 export default function BottomControls({
+  storyboard,
+  previewTime,
   animations,
   panHandlers,
   seekColor,
@@ -129,6 +136,16 @@ export default function BottomControls({
     <NullControl />
   ) : (
     <Seekbar
+      previewWidth={SEEK_PREVIEW_WIDTH}
+      preview={
+        previewTime !== undefined ? (
+          <StoryboardPreview
+            storyboard={storyboard}
+            seconds={previewTime}
+            duration={duration}
+          />
+        ) : undefined
+      }
       seekerFillWidth={seekerFillWidth}
       seekerPosition={seekerPosition}
       seekColor={seekColor}

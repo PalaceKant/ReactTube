@@ -14,7 +14,7 @@ import {
   SeekDirection,
   SeekSource,
   TV_SCRUB_TICK_MS,
-  TV_SCRUB_STEP_SECONDS,
+  getScrubStepSeconds,
   TV_SEEK_CHAIN_WINDOW_MS,
   TV_SEEK_STEP_SECONDS,
 } from "../tvRemoteSeek";
@@ -22,6 +22,7 @@ import {
 import {useTVRemoteEvent} from "@/ui/tv";
 
 interface TVSeekControlProps {
+  sourceKey?: string;
   /** The seek bar has focus, so the arrow keys seek. */
   seekerFocused: boolean;
   /** The player owns the remote; false while a screen or modal covers it. */
@@ -45,6 +46,7 @@ interface Scrub {
  * `scrubTime` so the seek bar and timer can show where the release will land.
  */
 export default function useTVSeekControl({
+  sourceKey,
   seekerFocused,
   active,
   duration,
@@ -53,6 +55,8 @@ export default function useTVSeekControl({
   setPause,
 }: TVSeekControlProps) {
   const [scrubTime, setScrubTime] = useState<number>();
+  const [stepPreviewTime, setStepPreviewTime] = useState<number>();
+  const previewTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [interpreter] = useState(() =>
     createRemoteSeekInterpreter(Platform.OS === "android" ? "android" : "ios"),
   );
@@ -81,6 +85,12 @@ export default function useTVSeekControl({
     const target = clampSeekTime(seconds, durationRef.current);
     lastTargetRef.current = {time: target, at: Date.now()};
     seekRef.current(target);
+    clearTimeout(previewTimer.current);
+    setStepPreviewTime(target);
+    previewTimer.current = setTimeout(
+      () => setStepPreviewTime(undefined),
+      1000,
+    );
   }, []);
 
   const stopScrub = useCallback(
@@ -102,11 +112,15 @@ export default function useTVSeekControl({
   const startScrub = useCallback(
     (direction: SeekDirection) => {
       stopScrub(false);
+      clearTimeout(previewTimer.current);
+      setStepPreviewTime(undefined);
+      const startedAt = Date.now();
       const scrub: Scrub = {
         time: getSeekBase(),
         timer: setInterval(() => {
           scrub.time = clampSeekTime(
-            scrub.time + direction * TV_SCRUB_STEP_SECONDS,
+            scrub.time +
+              direction * getScrubStepSeconds(Date.now() - startedAt),
             durationRef.current,
           );
           setScrubTime(scrub.time);
@@ -128,7 +142,21 @@ export default function useTVSeekControl({
     }
   }, [canSeekWithDpad, interpreter, stopScrub]);
 
-  useEffect(() => () => stopScrub(false), [stopScrub]);
+  useEffect(() => {
+    interpreter.reset();
+    stopScrub(false);
+    lastTargetRef.current = undefined;
+    clearTimeout(previewTimer.current);
+    setStepPreviewTime(undefined);
+  }, [sourceKey, interpreter, stopScrub]);
+
+  useEffect(
+    () => () => {
+      clearTimeout(previewTimer.current);
+      if (scrubRef.current) clearInterval(scrubRef.current.timer);
+    },
+    [],
+  );
 
   const allowed = (source: SeekSource) =>
     source === "media" ? active : canSeekWithDpad;
@@ -160,7 +188,11 @@ export default function useTVSeekControl({
           break;
       }
     }
-  });
+  }, active);
 
-  return {scrubTime, scrubbing: scrubTime !== undefined};
+  return {
+    scrubTime,
+    previewTime: scrubTime ?? stepPreviewTime,
+    scrubbing: scrubTime !== undefined,
+  };
 }

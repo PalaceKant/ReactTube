@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   clampSeekTime,
   createRemoteSeekInterpreter,
-  TV_SCRUB_STEP_SECONDS,
+  getScrubStepSeconds,
   getSeekerPositionForTime,
 } from "../src/components/video/videoPlayer/tvRemoteSeek.ts";
 
@@ -136,17 +136,42 @@ test("clamps seek targets into the playable range", () => {
 test("held arrows move through timestamps and stop at either video boundary", () => {
   let time = 90;
   for (let tick = 0; tick < 4; tick++) {
-    time = clampSeekTime(time + TV_SCRUB_STEP_SECONDS, 150);
+    time = clampSeekTime(time + getScrubStepSeconds(tick * 250), 150);
   }
-  assert.equal(time, 130);
+  assert.equal(time, 110);
   for (let tick = 0; tick < 10; tick++) {
-    time = clampSeekTime(time + TV_SCRUB_STEP_SECONDS, 150);
+    time = clampSeekTime(time + getScrubStepSeconds(1000 + tick * 250), 150);
   }
   assert.equal(time, 149);
   for (let tick = 0; tick < 20; tick++) {
-    time = clampSeekTime(time - TV_SCRUB_STEP_SECONDS, 150);
+    time = clampSeekTime(time - getScrubStepSeconds(4000 + tick * 250), 150);
   }
   assert.equal(time, 0);
+});
+
+test("holding longer accelerates time seeking with a bounded maximum", () => {
+  assert.equal(getScrubStepSeconds(0), 5);
+  assert.equal(getScrubStepSeconds(999), 5);
+  assert.equal(getScrubStepSeconds(1000), 10);
+  assert.equal(getScrubStepSeconds(3000), 20);
+  assert.equal(getScrubStepSeconds(6000), 40);
+  assert.equal(getScrubStepSeconds(600000), 40);
+});
+
+test("repeated tvOS long-press events do not restart acceleration", () => {
+  const remote = createRemoteSeekInterpreter("ios");
+  assert.deepEqual(
+    feed(remote, [
+      ["longRight", DOWN],
+      ["longRight", DOWN],
+      ["longRight", undefined],
+      ["longRight", UP],
+    ]),
+    [{type: "scrubStart", direction: 1, source: "dpad"}, {type: "scrubEnd"}],
+  );
+  assert.deepEqual(feed(remote, [["longLeft", DOWN]]), [
+    {type: "scrubStart", direction: -1, source: "dpad"},
+  ]);
 });
 
 test("maps a time onto the seek bar and keeps it on the bar", () => {

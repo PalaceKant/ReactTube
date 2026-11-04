@@ -16,9 +16,13 @@ export function VideoSidePanelScreen({navigation}: Props) {
   const [tab, setTab] = useState<VideoSidePanelTab>(
     data?.initialTab ?? "details",
   );
+  // Keep the loaded page when switching tabs within this panel session.
+  const [commentsRequested, setCommentsRequested] = useState(
+    data?.initialTab === "comments",
+  );
   const comments = useVideoComments(
     data?.videoId ?? "",
-    Boolean(data) && tab === "comments",
+    Boolean(data) && commentsRequested,
   );
 
   useEffect(() => {
@@ -39,7 +43,10 @@ export function VideoSidePanelScreen({navigation}: Props) {
         comments={comments}
         model={data.model}
         onClose={() => navigation.goBack()}
-        onTabChange={setTab}
+        onTabChange={nextTab => {
+          if (nextTab === "comments") setCommentsRequested(true);
+          setTab(nextTab);
+        }}
         queueEntries={data.queueEntries}
         tab={tab}
         visible

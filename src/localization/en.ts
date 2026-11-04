@@ -1,4 +1,18 @@
 export const en = {
+  "video.seek.previewUnavailable": "Preview unavailable",
+  "video.seek.previewLoading": "Loading preview…",
+  "video.playbackInfo.title": "Playback info",
+  "video.playbackInfo.resolution": "Current resolution",
+  "video.playbackInfo.player": "Player",
+  "video.playbackInfo.delivery": "Delivery",
+  "video.playbackInfo.format": "Format / MIME",
+  "video.playbackInfo.codec": "Video codec",
+  "video.playbackInfo.fps": "Stream frame rate",
+  "video.playbackInfo.bitrate": "Stream bitrate",
+  "video.playbackInfo.speed": "Playback speed",
+  "video.playbackInfo.unknown": "Not reported",
+  "video.playbackInfo.hint":
+    "Resolution is reported by the player. Stream details are shown only when known for the active source; adaptive HLS may not report its codec or frame rate.",
   "common.retry": "Try again",
   "common.cancel": "Cancel",
   "common.continue": "Continue",

@@ -1,6 +1,6 @@
 import {useNavigation} from "@react-navigation/native";
 import React from "react";
-import {StyleSheet, TVFocusGuideView, View} from "react-native";
+import {Platform, StyleSheet, TVFocusGuideView, View} from "react-native";
 
 import {VideoMetadata} from "./VideoPlayer";
 
@@ -91,24 +91,28 @@ export default function MetadataContainer({
           />
           <MetadataButton
             onFocus={onControlFocus}
-            accessibilityLabel={t("video.action.like")}
-            active={metadata.liked}
-            icon={"thumb-up"}
-            onPress={metadata.onLike}
-          />
-          <MetadataButton
-            onFocus={onControlFocus}
-            accessibilityLabel={t("video.action.dislike")}
-            active={metadata.disliked}
-            icon={"thumb-down"}
-            onPress={metadata.onDislike}
-          />
-          <MetadataButton
-            onFocus={onControlFocus}
             accessibilityLabel={t("video.action.save")}
             icon={"playlist-add"}
             onPress={metadata.onSaveVideo}
           />
+          {!Platform.isTV ? (
+            <>
+              <MetadataButton
+                onFocus={onControlFocus}
+                accessibilityLabel={t("video.action.like")}
+                active={metadata.liked}
+                icon={"thumb-up"}
+                onPress={metadata.onLike}
+              />
+              <MetadataButton
+                onFocus={onControlFocus}
+                accessibilityLabel={t("video.action.dislike")}
+                active={metadata.disliked}
+                icon={"thumb-down"}
+                onPress={metadata.onDislike}
+              />
+            </>
+          ) : null}
           {metadata.onShowComments ? (
             <MetadataButton
               onFocus={onControlFocus}
@@ -124,6 +128,15 @@ export default function MetadataContainer({
               accessibilityLabel={t("video.player.details")}
               icon={"info-outline"}
               onPress={metadata.onShowDetails}
+            />
+          ) : null}
+          {metadata.onShowPlaybackInfo ? (
+            <MetadataButton
+              onFocus={onControlFocus}
+              accessibilityLabel={t("video.playbackInfo.title")}
+              label={t("video.playbackInfo.title")}
+              icon={"high-quality"}
+              onPress={metadata.onShowPlaybackInfo}
             />
           ) : null}
           <MetadataButton

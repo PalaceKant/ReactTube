@@ -164,7 +164,11 @@ export interface YTVideoInfo {
    * Direct stream URLs for the VLC player: VP9 above 1080p, which AVPlayer
    * cannot decode on Apple TV, with the audio as a separate stream.
    */
-  vlc_source?: {videoUrl: string; audioUrl?: string};
+  vlc_source?: {
+    videoUrl: string;
+    audioUrl?: string;
+    format?: import("@/utils/PlaybackFormat").PlaybackFormat;
+  };
   /** Caption tracks of the stream client; the TV metadata client has none. */
   subtitles?: SubtitleTrackList;
   best_format?: YTFormat;

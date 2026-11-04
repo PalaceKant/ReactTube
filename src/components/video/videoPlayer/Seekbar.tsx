@@ -1,9 +1,11 @@
-import {Dispatch, Ref, SetStateAction, useState} from "react";
+import {Dispatch, Ref, SetStateAction, useState, type ReactNode} from "react";
 import {PanResponderInstance, Pressable, StyleSheet, View} from "react-native";
 
 import {useAppTheme} from "@/ui/theme";
 
 interface SeekbarProps {
+  preview?: ReactNode;
+  previewWidth?: number;
   seekerFillWidth: number;
   seekerPosition: number;
   seekColor: string;
@@ -25,6 +27,8 @@ const handleSize = 32;
  * same thing.
  */
 export default function Seekbar({
+  preview,
+  previewWidth = 320,
   seekColor,
   seekerFillWidth,
   seekerPosition,
@@ -37,6 +41,7 @@ export default function Seekbar({
 }: SeekbarProps) {
   const {theme, reduceMotion} = useAppTheme();
   const [focused, setFocused] = useState(false);
+  const [trackWidth, setTrackWidth] = useState(0);
   const fillColor = seekColor || theme.colors.mediaProgress;
 
   return (
@@ -44,8 +49,30 @@ export default function Seekbar({
       collapsable={false}
       style={[styles.container, {marginHorizontal: theme.spacing.xl}]}
       {...seekerPanHandlers}>
+      {preview ? (
+        <View
+          pointerEvents={"none"}
+          style={{
+            position: "absolute",
+            bottom: 44,
+            left: Math.max(
+              0,
+              Math.min(
+                seekerPosition - previewWidth / 2,
+                trackWidth - previewWidth,
+              ),
+            ),
+            width: previewWidth,
+          }}>
+          {preview}
+        </View>
+      ) : null}
       <View
-        onLayout={event => setSeekerWidth(event.nativeEvent.layout.width)}
+        onLayout={event => {
+          const width = event.nativeEvent.layout.width;
+          setSeekerWidth(width);
+          setTrackWidth(width);
+        }}
         pointerEvents={"none"}
         style={[styles.track, {backgroundColor: theme.colors.divider}]}>
         <View

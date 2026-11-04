@@ -1,6 +1,20 @@
 import type {TranslationKey} from "./en";
 
 export const de = {
+  "video.seek.previewUnavailable": "Keine Vorschau verfügbar",
+  "video.seek.previewLoading": "Vorschau wird geladen…",
+  "video.playbackInfo.title": "Wiedergabeinfo",
+  "video.playbackInfo.resolution": "Aktuelle Auflösung",
+  "video.playbackInfo.player": "Player",
+  "video.playbackInfo.delivery": "Übertragung",
+  "video.playbackInfo.format": "Format / MIME",
+  "video.playbackInfo.codec": "Videocodec",
+  "video.playbackInfo.fps": "Bildrate des Streams",
+  "video.playbackInfo.bitrate": "Bitrate des Streams",
+  "video.playbackInfo.speed": "Wiedergabetempo",
+  "video.playbackInfo.unknown": "Nicht gemeldet",
+  "video.playbackInfo.hint":
+    "Die Auflösung wird vom Player gemeldet. Streamdetails werden nur für die aktive Quelle angezeigt, wenn sie bekannt sind. Adaptives HLS meldet Codec und Bildrate möglicherweise nicht.",
   "common.retry": "Erneut versuchen",
   "common.cancel": "Abbrechen",
   "common.continue": "Weiter",

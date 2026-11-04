@@ -1,4 +1,10 @@
-import {forwardRef, useCallback, useImperativeHandle, useRef} from "react";
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useMemo,
+} from "react";
 import {StyleSheet} from "react-native";
 import Video, {
   OnVideoErrorData,
@@ -31,6 +37,32 @@ const VideoPlayerNative = forwardRef<
   const videoInfo = props.props.videoInfo;
 
   const videoRef = useRef<VideoRef>(undefined);
+  const videoSource = useMemo(
+    () => ({
+      uri: props.props.url,
+      title: videoInfo?.title,
+      subtitle: videoInfo?.author?.name,
+      description: videoInfo?.description,
+      customImageUri: videoInfo?.thumbnailImage?.url,
+      startPosition: props.props.startPosition,
+    }),
+    [
+      props.props.url,
+      props.props.startPosition,
+      videoInfo?.title,
+      videoInfo?.author?.name,
+      videoInfo?.description,
+      videoInfo?.thumbnailImage?.url,
+    ],
+  );
+  const reportedSize = useRef<
+    | {
+        sourceKey: string;
+        width: number;
+        height: number;
+      }
+    | undefined
+  >(undefined);
 
   const onPlaybackFailure: ((reason: string) => void) | undefined =
     props.props.onPlaybackFailure;
@@ -46,7 +78,14 @@ const VideoPlayerNative = forwardRef<
 
   const reportPlaybackSize = (data?: {width?: number; height?: number}) => {
     const size = toPlaybackSize(data);
-    if (size) {
+    const sourceKey = props.props.playbackAttemptKey ?? props.props.url;
+    if (
+      size &&
+      (reportedSize.current?.sourceKey !== sourceKey ||
+        reportedSize.current?.width !== size.width ||
+        reportedSize.current?.height !== size.height)
+    ) {
+      reportedSize.current = {sourceKey, ...size};
       props.onPlaybackSizeChange?.(size);
       onPlaybackInfoUpdate?.(size);
     }
@@ -91,16 +130,7 @@ const VideoPlayerNative = forwardRef<
       // @ts-ignore
       ref={videoRef}
       style={styles.fullScreen}
-      source={{
-        // uri: "https://sample.vodobox.net/skate_phantom_flex_4k/skate_phantom_flex_4k.m3u8",
-        uri: props.props.url,
-        // @ts-ignore Own version
-        title: videoInfo?.title,
-        subtitle: videoInfo?.author?.name,
-        description: videoInfo?.description,
-        customImageUri: videoInfo?.thumbnailImage?.url,
-        startPosition: props.props.startPosition,
-      }}
+      source={videoSource}
       paused={props.paused}
       rate={props.rate}
       // @ts-expect-error Index selections causes some type error here somehow

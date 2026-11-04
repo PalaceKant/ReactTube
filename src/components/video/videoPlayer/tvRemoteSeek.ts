@@ -6,8 +6,13 @@ export const TV_SEEK_STEP_SECONDS = 15;
 /** How often a held direction key advances the scrub preview. */
 export const TV_SCRUB_TICK_MS = 250;
 
-/** A held direction advances time in predictable ten-second jumps. */
-export const TV_SCRUB_STEP_SECONDS = 10;
+/** Accelerate the seek preview, never the playback rate. */
+export function getScrubStepSeconds(heldMs: number): number {
+  if (heldMs < 1000) return 5;
+  if (heldMs < 3000) return 10;
+  if (heldMs < 6000) return 20;
+  return 40;
+}
 
 /**
  * Taps that follow each other within this window build on the previous target
@@ -93,6 +98,7 @@ export function createRemoteSeekInterpreter(
       return [];
     }
     scrubbing = false;
+    heldKey = undefined;
     return [{type: "scrubEnd"}];
   };
 
@@ -149,7 +155,10 @@ export function createRemoteSeekInterpreter(
     const longDirection = longDirectionKeys[eventType];
     if (longDirection !== undefined) {
       if (eventKeyAction === KEY_ACTION_DOWN) {
+        // Repeated began events must not restart the acceleration clock.
+        if (scrubbing && heldKey === eventType) return [];
         const intents = endScrub();
+        heldKey = eventType;
         scrubbing = true;
         intents.push({
           type: "scrubStart",

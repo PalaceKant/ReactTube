@@ -156,7 +156,14 @@ async function generateIfPossible(
 async function resolveVlcSource(
   streaming: StreamingSource,
   youtube: Innertube,
-): Promise<{videoUrl: string; audioUrl?: string} | undefined> {
+): Promise<
+  | {
+      videoUrl: string;
+      audioUrl?: string;
+      format?: import("@/utils/PlaybackFormat").PlaybackFormat;
+    }
+  | undefined
+> {
   if (!streaming.canGenerateHls) {
     return undefined;
   }
@@ -191,7 +198,15 @@ async function resolveVlcSource(
         }`,
     );
 
-    return {videoUrl, audioUrl};
+    return {
+      videoUrl,
+      audioUrl,
+      format: {
+        mimeType: selection.video.mime_type,
+        fps: selection.video.fps,
+        bitrate: selection.video.bitrate,
+      },
+    };
   } catch (error: any) {
     LOGGER.warn(
       `VLC-Quelle nicht möglich (${String(error?.message ?? error)})`,
@@ -623,7 +638,7 @@ export default function useVideoDetails(
   const extrasVideoId =
     wantsPlayerExtras &&
     videoInfo &&
-    (!videoInfo.endscreen || (client !== "TV" && !videoInfo.storyboard))
+    (!videoInfo.endscreen || !videoInfo.storyboard)
       ? videoInfo.id
       : undefined;
 
