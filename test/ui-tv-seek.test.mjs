@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   clampSeekTime,
+  createSeekCommitter,
   createRemoteSeekInterpreter,
   getScrubStepSeconds,
   getSeekerPositionForTime,
@@ -10,6 +11,34 @@ import {
 
 const DOWN = 0;
 const UP = 1;
+
+test("rapid taps commit only the latest target while a hold commits immediately", t => {
+  t.mock.timers.enable({apis: ["setTimeout"]});
+  const requests = [];
+  const committer = createSeekCommitter(time => requests.push(time));
+  committer.request(15, true);
+  t.mock.timers.tick(100);
+  committer.request(30, true);
+  t.mock.timers.tick(100);
+  assert.deepEqual(requests, []);
+  t.mock.timers.tick(50);
+  assert.deepEqual(requests, [30]);
+  committer.request(45, true);
+  committer.request(150, false);
+  assert.deepEqual(requests, [30, 150]);
+  t.mock.timers.tick(1000);
+  assert.deepEqual(requests, [30, 150]);
+});
+
+test("leaving a video cancels the pending decoder seek", t => {
+  t.mock.timers.enable({apis: ["setTimeout"]});
+  const requests = [];
+  const committer = createSeekCommitter(time => requests.push(time));
+  committer.request(30, true);
+  committer.cancel();
+  t.mock.timers.tick(1000);
+  assert.deepEqual(requests, []);
+});
 
 function feed(interpreter, events) {
   return events.flatMap(([eventType, eventKeyAction]) =>
@@ -138,7 +167,7 @@ test("held arrows move through timestamps and stop at either video boundary", ()
   for (let tick = 0; tick < 4; tick++) {
     time = clampSeekTime(time + getScrubStepSeconds(tick * 250), 150);
   }
-  assert.equal(time, 110);
+  assert.equal(time, 130);
   for (let tick = 0; tick < 10; tick++) {
     time = clampSeekTime(time + getScrubStepSeconds(1000 + tick * 250), 150);
   }
@@ -150,12 +179,14 @@ test("held arrows move through timestamps and stop at either video boundary", ()
 });
 
 test("holding longer accelerates time seeking with a bounded maximum", () => {
-  assert.equal(getScrubStepSeconds(0), 5);
-  assert.equal(getScrubStepSeconds(999), 5);
-  assert.equal(getScrubStepSeconds(1000), 10);
-  assert.equal(getScrubStepSeconds(3000), 20);
-  assert.equal(getScrubStepSeconds(6000), 40);
-  assert.equal(getScrubStepSeconds(600000), 40);
+  assert.equal(getScrubStepSeconds(0), 10);
+  assert.equal(getScrubStepSeconds(799), 10);
+  assert.equal(getScrubStepSeconds(800), 20);
+  assert.equal(getScrubStepSeconds(1999), 20);
+  assert.equal(getScrubStepSeconds(2000), 40);
+  assert.equal(getScrubStepSeconds(3999), 40);
+  assert.equal(getScrubStepSeconds(4000), 60);
+  assert.equal(getScrubStepSeconds(600000), 60);
 });
 
 test("repeated tvOS long-press events do not restart acceleration", () => {

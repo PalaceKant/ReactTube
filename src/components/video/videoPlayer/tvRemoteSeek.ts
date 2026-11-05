@@ -4,14 +4,40 @@ import type {TVRemoteEvent} from "@/ui/tv/tvRemoteDispatcher";
 export const TV_SEEK_STEP_SECONDS = 15;
 
 /** How often a held direction key advances the scrub preview. */
-export const TV_SCRUB_TICK_MS = 250;
+export const TV_SCRUB_TICK_MS = 150;
+
+/** Merge a burst of taps before asking the decoder to reposition. */
+export const TV_SEEK_SETTLE_MS = 150;
+
+/** One pending decoder request; the on-screen preview is updated separately. */
+export function createSeekCommitter(seek: (seconds: number) => void) {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const cancel = () => {
+    clearTimeout(timer);
+    timer = undefined;
+  };
+  return {
+    cancel,
+    request(seconds: number, defer: boolean) {
+      cancel();
+      if (!defer) {
+        seek(seconds);
+        return;
+      }
+      timer = setTimeout(() => {
+        timer = undefined;
+        seek(seconds);
+      }, TV_SEEK_SETTLE_MS);
+    },
+  };
+}
 
 /** Accelerate the seek preview, never the playback rate. */
 export function getScrubStepSeconds(heldMs: number): number {
-  if (heldMs < 1000) return 5;
-  if (heldMs < 3000) return 10;
-  if (heldMs < 6000) return 20;
-  return 40;
+  if (heldMs < 800) return 10;
+  if (heldMs < 2000) return 20;
+  if (heldMs < 4000) return 40;
+  return 60;
 }
 
 /**

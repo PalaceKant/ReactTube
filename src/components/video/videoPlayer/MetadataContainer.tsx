@@ -23,7 +23,7 @@ interface MetadataContainerProps {
 
 const metadataSeparator = " · ";
 
-export default function MetadataContainer({
+const MetadataContainer = React.memo(function MetadataContainer({
   metadata,
   resolution,
   pause,
@@ -170,7 +170,9 @@ export default function MetadataContainer({
       </View>
     </TVFocusGuideView>
   );
-}
+});
+
+export default MetadataContainer;
 
 const styles = StyleSheet.create({
   container: {

@@ -4,10 +4,11 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import {BackHandler, DeviceEventEmitter, View} from "react-native";
+import {BackHandler, DeviceEventEmitter, Platform, View} from "react-native";
 import {
   OnAudioTracksData,
   OnLoadData,
@@ -472,9 +473,19 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
     // While a held key scrubs, the bar and the timer preview the release
     // target; the video keeps playing until the seek is committed.
     const displayedTime = previewTime ?? currentTime;
+    const overlayMetadata = useMemo(
+      () => ({
+        ...props.metadata,
+        onShowPlaybackInfo: props.playbackEngine
+          ? () => setPlaybackInfoVisible(true)
+          : undefined,
+      }),
+      [props.metadata, props.playbackEngine],
+    );
+    const jumpToStart = useCallback(() => _videoRef.current?.seek(0), []);
     const displayedSeekerPosition =
-      previewTime !== undefined
-        ? getSeekerPositionForTime(previewTime, duration, seekerWidth)
+      (Platform.isTV && !seeking) || previewTime !== undefined
+        ? getSeekerPositionForTime(displayedTime, duration, seekerWidth)
         : seekerPosition;
 
     const {clearControlTimeout, resetControlTimeout, setControlTimeout} =
@@ -520,7 +531,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
     // console.log("Seeker Width: ", seekerWidth);
 
     useEffect(() => {
-      if (!seeking && currentTime && duration) {
+      if (!Platform.isTV && !seeking && currentTime && duration) {
         const percent = currentTime / duration;
         const position = seekerWidth * percent;
 
@@ -612,7 +623,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             animations={animations}
             resetControlTimeout={resetControlTimeout}
             seekerFillWidth={
-              previewTime !== undefined
+              (Platform.isTV && !seeking) || previewTime !== undefined
                 ? displayedSeekerPosition
                 : seekerFillWidth
             }
@@ -625,12 +636,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             currentTime={displayedTime}
             showDuration
             bottomContainer={bottomContainer}
-            metadata={{
-              ...props.metadata,
-              onShowPlaybackInfo: props.playbackEngine
-                ? () => setPlaybackInfoVisible(true)
-                : undefined,
-            }}
+            metadata={overlayMetadata}
             storyboard={props.storyboard}
             previewTime={remoteActive ? previewTime : undefined}
             resolution={resolution}
@@ -638,7 +644,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             setPaused={setPaused}
             onSeekbarPress={() => setPaused(paused => !paused)}
             restoreFocusOnHide={remoteActive && !endscreenBrowsing}
-            onJumpToStart={() => _videoRef.current?.seek(0)}
+            onJumpToStart={jumpToStart}
           />
         </PlaybackTimeContext.Provider>
         <PlaybackInfoPanel

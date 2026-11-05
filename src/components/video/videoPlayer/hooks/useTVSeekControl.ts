@@ -17,6 +17,7 @@ import {
   getScrubStepSeconds,
   TV_SEEK_CHAIN_WINDOW_MS,
   TV_SEEK_STEP_SECONDS,
+  createSeekCommitter,
 } from "../tvRemoteSeek";
 
 import {useTVRemoteEvent} from "@/ui/tv";
@@ -71,6 +72,9 @@ export default function useTVSeekControl({
   currentTimeRef.current = currentTime;
   const seekRef = useRef(seek);
   seekRef.current = seek;
+  const [committer] = useState(() =>
+    createSeekCommitter(seconds => seekRef.current(seconds)),
+  );
 
   /** Where the next seek starts: a just-requested target, else the player. */
   const getSeekBase = useCallback(() => {
@@ -81,17 +85,20 @@ export default function useTVSeekControl({
     return currentTimeRef.current;
   }, []);
 
-  const seekTo = useCallback((seconds: number) => {
-    const target = clampSeekTime(seconds, durationRef.current);
-    lastTargetRef.current = {time: target, at: Date.now()};
-    seekRef.current(target);
-    clearTimeout(previewTimer.current);
-    setStepPreviewTime(target);
-    previewTimer.current = setTimeout(
-      () => setStepPreviewTime(undefined),
-      1000,
-    );
-  }, []);
+  const seekTo = useCallback(
+    (seconds: number, defer = false) => {
+      const target = clampSeekTime(seconds, durationRef.current);
+      lastTargetRef.current = {time: target, at: Date.now()};
+      committer.request(target, defer);
+      clearTimeout(previewTimer.current);
+      setStepPreviewTime(target);
+      previewTimer.current = setTimeout(
+        () => setStepPreviewTime(undefined),
+        1000,
+      );
+    },
+    [committer],
+  );
 
   const stopScrub = useCallback(
     (commit: boolean) => {
@@ -112,11 +119,15 @@ export default function useTVSeekControl({
   const startScrub = useCallback(
     (direction: SeekDirection) => {
       stopScrub(false);
+      committer.cancel();
       clearTimeout(previewTimer.current);
       setStepPreviewTime(undefined);
       const startedAt = Date.now();
       const scrub: Scrub = {
-        time: getSeekBase(),
+        time: clampSeekTime(
+          getSeekBase() + direction * getScrubStepSeconds(0),
+          durationRef.current,
+        ),
         timer: setInterval(() => {
           scrub.time = clampSeekTime(
             scrub.time +
@@ -129,7 +140,7 @@ export default function useTVSeekControl({
       scrubRef.current = scrub;
       setScrubTime(scrub.time);
     },
-    [getSeekBase, stopScrub],
+    [getSeekBase, stopScrub, committer],
   );
 
   // Losing the seek bar or the remote mid-scrub lands where the preview was,
@@ -143,19 +154,25 @@ export default function useTVSeekControl({
   }, [canSeekWithDpad, interpreter, stopScrub]);
 
   useEffect(() => {
+    if (!active) committer.cancel();
+  }, [active, committer]);
+
+  useEffect(() => {
     interpreter.reset();
     stopScrub(false);
     lastTargetRef.current = undefined;
+    committer.cancel();
     clearTimeout(previewTimer.current);
     setStepPreviewTime(undefined);
-  }, [sourceKey, interpreter, stopScrub]);
+  }, [sourceKey, interpreter, stopScrub, committer]);
 
   useEffect(
     () => () => {
       clearTimeout(previewTimer.current);
+      committer.cancel();
       if (scrubRef.current) clearInterval(scrubRef.current.timer);
     },
-    [],
+    [committer],
   );
 
   const allowed = (source: SeekSource) =>
@@ -166,7 +183,10 @@ export default function useTVSeekControl({
       switch (intent.type) {
         case "step":
           if (allowed(intent.source)) {
-            seekTo(getSeekBase() + intent.direction * TV_SEEK_STEP_SECONDS);
+            seekTo(
+              getSeekBase() + intent.direction * TV_SEEK_STEP_SECONDS,
+              true,
+            );
           }
           break;
         case "scrubStart":

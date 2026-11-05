@@ -1,5 +1,11 @@
 import {useIsFocused} from "@react-navigation/native";
-import React, {Dispatch, SetStateAction, useEffect, useRef} from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import {
   ImageBackground,
   PanResponderInstance,
@@ -165,6 +171,11 @@ export default function BottomControls({
     />
   );
 
+  const pausePlayback = useCallback(() => setPaused(true), [setPaused]);
+  const collapsePanel = useCallback(() => {
+    showBottomContainer.value = false;
+  }, [showBottomContainer]);
+
   return (
     <Animated.View
       style={[
@@ -177,15 +188,13 @@ export default function BottomControls({
           <MetadataContainer
             metadata={metadata}
             resolution={resolution}
-            pause={() => setPaused(true)}
+            pause={pausePlayback}
             onJumpToStart={onJumpToStart}
             // Every control above the panel collapses it. Only the seek handle
             // did before, so reaching the action buttons from the related
             // videos left the panel covering the lower half of the screen for
             // the rest of the video.
-            onControlFocus={() => {
-              showBottomContainer.value = false;
-            }}
+            onControlFocus={collapsePanel}
           />
         </View>
         <ImageBackground
