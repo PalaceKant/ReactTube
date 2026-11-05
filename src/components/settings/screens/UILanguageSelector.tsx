@@ -6,7 +6,7 @@ import SettingsSection from "../SettingsSection";
 import {useTranslation, type UILanguage} from "@/localization";
 import {useAppTheme} from "@/ui/theme";
 
-const languageOptions: UILanguage[] = ["en", "de"];
+const languageOptions: UILanguage[] = ["ko", "en", "de"];
 
 export default function UILanguageSelectorScreen() {
   const {language, setLanguage, t} = useTranslation();
@@ -20,9 +20,11 @@ export default function UILanguageSelectorScreen() {
         <SettingsSelectorItem
           key={option}
           label={t(
-            option === "en"
-              ? "settings.language.english"
-              : "settings.language.german",
+            option === "ko"
+              ? "settings.language.korean"
+              : option === "en"
+                ? "settings.language.english"
+                : "settings.language.german",
           )}
           onPress={() => setLanguage(option)}
           selected={language === option}

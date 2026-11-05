@@ -6,6 +6,7 @@ import {
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
   BackHandler,
+  Platform,
   TVEventControl,
   StyleSheet,
   TVFocusGuideView,
@@ -158,6 +159,10 @@ export function TVNavigationRailShell({children}: TVNavigationRailShellProps) {
 
   useEffect(() => {
     if (!screenFocused) return;
+    if (Platform.OS === "ios" && focusedKey !== undefined) {
+      TVEventControl.disableTVMenuKey();
+      return () => TVEventControl.enableTVMenuKey();
+    }
     TVEventControl.enableTVMenuKey();
     const subscription = BackHandler.addEventListener(
       "hardwareBackPress",

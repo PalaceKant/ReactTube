@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
   line: {
     color: "#FFFFFF",
     backgroundColor: "rgba(8, 8, 8, 0.75)",
-    fontSize: Platform.isTV ? 38 : 18,
-    lineHeight: Platform.isTV ? 50 : 24,
+    fontSize: Platform.isTV ? 46 : 18,
+    lineHeight: Platform.isTV ? 60 : 24,
     paddingHorizontal: Platform.isTV ? 12 : 6,
     textAlign: "center",
   },

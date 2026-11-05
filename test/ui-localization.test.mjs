@@ -8,6 +8,7 @@ import {
 } from "../src/localization/core.ts";
 import {de} from "../src/localization/de.ts";
 import {en} from "../src/localization/en.ts";
+import {ko} from "../src/localization/ko.ts";
 import {getThemeTypographyTarget} from "../src/ui/theme/themeSelection.ts";
 import {phoneTypography, tvTypography} from "../src/ui/theme/typography.ts";
 
@@ -46,4 +47,17 @@ test("falls back to English when a locale entry is unavailable", () => {
     resolveTranslation("de", "common.retry", {}, resources),
     "Try again",
   );
+});
+
+test("Korean covers every key and preserves interpolation placeholders", () => {
+  assert.deepEqual(Object.keys(ko).sort(), Object.keys(en).sort());
+  assert.equal(normalizeCoreUILanguage("ko"), "ko");
+  for (const [key, source] of Object.entries(en)) {
+    assert.deepEqual(
+      (ko[key].match(/\{\w+\}/g) ?? []).sort(),
+      (source.match(/\{\w+\}/g) ?? []).sort(),
+      key,
+    );
+    assert.ok(ko[key].trim().length > 0, key);
+  }
 });

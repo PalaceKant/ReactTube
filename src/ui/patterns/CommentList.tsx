@@ -196,11 +196,17 @@ const CommentRow = React.memo(function CommentRow({comment}: CommentRowProps) {
         {
           backgroundColor: focused
             ? theme.colors.surfacePressed
-            : theme.colors.focusResting,
-          borderColor: focused ? theme.colors.focus : theme.colors.focusResting,
+            : Platform.isTV
+              ? theme.colors.surfaceRaised
+              : theme.colors.focusResting,
+          borderColor: focused
+            ? theme.colors.focus
+            : Platform.isTV
+              ? theme.colors.divider
+              : theme.colors.focusResting,
           borderRadius: theme.radii.card,
           gap: theme.spacing.md,
-          padding: Platform.isTV ? theme.spacing.sm : 0,
+          padding: Platform.isTV ? theme.spacing.lg : 0,
         },
       ]}>
       <Image

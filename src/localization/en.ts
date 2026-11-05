@@ -1,4 +1,8 @@
 export const en = {
+  "settings.language.korean": "Korean",
+  "media.badge.members": "Members only",
+  "media.badge.earlyAccess": "Members early access",
+
   "video.seek.previewUnavailable": "Preview unavailable",
   "video.seek.previewLoading": "Loading preview…",
   "video.playbackInfo.title": "Playback info",

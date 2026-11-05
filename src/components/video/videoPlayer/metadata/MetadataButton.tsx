@@ -10,6 +10,7 @@ type MaterialIconName = React.ComponentProps<typeof MaterialIcons>["name"];
 
 interface MetadataButtonProps {
   label?: string;
+  compact?: boolean;
   imageUrl?: string;
   /** Material icon name; the avatar variant is used when this is left out. */
   icon?: string;
@@ -26,6 +27,7 @@ interface MetadataButtonProps {
  */
 export function MetadataButton({
   label,
+  compact = false,
   imageUrl,
   icon,
   accessibilityLabel,
@@ -54,7 +56,7 @@ export function MetadataButton({
       onPress={onPress}
       style={[
         styles.container,
-        label
+        label && !compact
           ? {
               width: "auto",
               aspectRatio: undefined,
@@ -64,6 +66,7 @@ export function MetadataButton({
               gap: theme.spacing.sm,
             }
           : undefined,
+        compact ? {width: 72, height: 72} : undefined,
         {
           marginHorizontal: theme.spacing.xs,
           borderRadius: theme.radii.round,
@@ -90,8 +93,21 @@ export function MetadataButton({
         // the first moments without one. An empty circle reads as broken.
         <MaterialIcons color={foreground} name={"person"} size={28} />
       )}
-      {label ? (
-        <AppText style={{color: foreground}} variant={"bodySmall"}>
+      {label && (!compact || focused) ? (
+        <AppText
+          numberOfLines={1}
+          style={
+            compact
+              ? {
+                  position: "absolute",
+                  top: 78,
+                  width: 240,
+                  textAlign: "center",
+                  color: theme.colors.textPrimary,
+                }
+              : {color: foreground}
+          }
+          variant={"bodySmall"}>
           {label}
         </AppText>
       ) : null}

@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import {
   ImageBackground,
+  Platform,
   PanResponderInstance,
   StyleSheet,
   TVFocusGuideView,
@@ -28,6 +29,7 @@ import {useAnimations} from "./hooks/useAnimations";
 import {calculateTime} from "./utils";
 
 import type {YTStoryboard} from "@/extraction/storyboard";
+import {AppText} from "@/ui/components";
 
 interface BottomControlsProps {
   storyboard?: YTStoryboard;
@@ -175,6 +177,71 @@ export default function BottomControls({
   const collapsePanel = useCallback(() => {
     showBottomContainer.value = false;
   }, [showBottomContainer]);
+
+  if (Platform.isTV) {
+    const timestamp = (seconds: number) => {
+      const total = Math.max(0, Math.floor(seconds));
+      return total >= 3600
+        ? `${Math.floor(total / 3600)}:${String(Math.floor(total / 60) % 60).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`
+        : `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+    };
+    return (
+      <Animated.View
+        pointerEvents={"box-none"}
+        style={[
+          StyleSheet.absoluteFill,
+          animations.controlsOpacity,
+          !screenFocused && {opacity: 0},
+        ]}>
+        <View style={{position: "absolute", top: 60, left: 72, right: 72}}>
+          <MetadataContainer
+            section={"title"}
+            metadata={metadata}
+            resolution={resolution}
+            pause={pausePlayback}
+            onJumpToStart={onJumpToStart}
+          />
+        </View>
+        <View
+          style={{
+            position: "absolute",
+            bottom: 36,
+            left: 72,
+            right: 72,
+            gap: 12,
+            backgroundColor: "rgba(0,0,0,0.42)",
+            borderRadius: 24,
+            padding: 16,
+          }}>
+          <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+            <AppText variant={"label"}>{timestamp(currentTime)}</AppText>
+            <AppText variant={"label"}>{timestamp(duration)}</AppText>
+          </View>
+          <TVFocusGuideView
+            autoFocus
+            trapFocusLeft
+            trapFocusRight
+            trapFocusUp={!showControls}
+            trapFocusDown={!showControls}>
+            {seekbarControl}
+          </TVFocusGuideView>
+          <MetadataContainer
+            section={"actions"}
+            metadata={metadata}
+            resolution={resolution}
+            pause={pausePlayback}
+            paused={paused}
+            onTogglePlay={onSeekbarPress}
+            onJumpToStart={onJumpToStart}
+            onControlFocus={resetControlTimeout}
+          />
+          <View style={{height: 230, overflow: "hidden"}}>
+            {bottomContainer}
+          </View>
+        </View>
+      </Animated.View>
+    );
+  }
 
   return (
     <Animated.View

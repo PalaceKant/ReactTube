@@ -44,6 +44,7 @@ export interface VideoData {
   livestream?: boolean;
   /** The highest resolution the feed labels the video with. */
   resolutionBadge?: ResolutionBadge;
+  membershipBadge?: "members" | "earlyAccess";
   // Progress of video
   thumbnailOverlays?: ThumbnailOverlays;
   music?: boolean;

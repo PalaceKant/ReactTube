@@ -1,9 +1,11 @@
-export type CoreUILanguage = "en" | "de";
+export type CoreUILanguage = "en" | "de" | "ko";
 
 export const defaultCoreUILanguage: CoreUILanguage = "en";
 
 export function normalizeCoreUILanguage(value: unknown): CoreUILanguage {
-  return value === "de" || value === "en" ? value : defaultCoreUILanguage;
+  return value === "ko" || value === "de" || value === "en"
+    ? value
+    : defaultCoreUILanguage;
 }
 
 export function getCoreUILanguageFromSettings(settings: {

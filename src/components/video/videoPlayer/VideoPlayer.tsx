@@ -642,6 +642,7 @@ const VideoPlayer = forwardRef<VideoPlayerRefs, VideoPlayerProps<any>>(
             resolution={resolution}
             showControls={showControls}
             setPaused={setPaused}
+            paused={_paused}
             onSeekbarPress={() => setPaused(paused => !paused)}
             restoreFocusOnHide={remoteActive && !endscreenBrowsing}
             onJumpToStart={jumpToStart}

@@ -53,9 +53,11 @@ export default function SettingsScreen({navigation}: Props) {
           iconBackground={theme.colors.brand}
           label={t("settings.uiLanguage")}
           value={t(
-            language === "en"
-              ? "settings.language.english"
-              : "settings.language.german",
+            language === "ko"
+              ? "settings.language.korean"
+              : language === "en"
+                ? "settings.language.english"
+                : "settings.language.german",
           )}
           onPress={() => navigate("UILanguageSelector")}
         />

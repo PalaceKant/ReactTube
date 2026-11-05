@@ -14,6 +14,9 @@ import {useTVOverscanInsets} from "@/ui/tv";
 
 interface MetadataContainerProps {
   metadata: VideoMetadata;
+  section?: "title" | "actions";
+  paused?: boolean;
+  onTogglePlay?: () => void;
   resolution?: string;
   pause: () => void;
   onJumpToStart: () => void;
@@ -25,6 +28,9 @@ const metadataSeparator = " · ";
 
 const MetadataContainer = React.memo(function MetadataContainer({
   metadata,
+  section,
+  paused,
+  onTogglePlay,
   resolution,
   pause,
   onJumpToStart,
@@ -44,6 +50,97 @@ const MetadataContainer = React.memo(function MetadataContainer({
   ]
     .filter(Boolean)
     .join(metadataSeparator);
+
+  if (Platform.isTV && section) {
+    if (section === "title")
+      return (
+        <View pointerEvents={"none"} style={{gap: 12, maxWidth: "88%"}}>
+          <AppText
+            variant={"titleLarge"}
+            numberOfLines={2}
+            style={{textShadowColor: "#000", textShadowRadius: 6}}>
+            {metadata.title}
+          </AppText>
+          <AppText variant={"bodySmall"} color={"textSecondary"}>
+            {subtitle}
+          </AppText>
+        </View>
+      );
+    const action = (
+      icon: string,
+      key: Parameters<typeof t>[0],
+      onPress?: () => void,
+    ) => (
+      <MetadataButton
+        compact
+        icon={icon}
+        label={t(key)}
+        accessibilityLabel={t(key)}
+        onPress={onPress}
+        onFocus={onControlFocus}
+      />
+    );
+    return (
+      <TVFocusGuideView
+        autoFocus
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingBottom: 52,
+        }}>
+        <View style={{flexDirection: "row", alignItems: "center"}}>
+          <MetadataButton
+            compact
+            imageUrl={metadata.authorThumbnailUrl}
+            accessibilityLabel={t("video.player.channel")}
+            onPress={() => {
+              pause();
+              metadata.onAuthorPress();
+            }}
+            onFocus={onControlFocus}
+          />
+          {action(
+            "info-outline",
+            "video.description.title",
+            metadata.onShowDetails,
+          )}
+        </View>
+        <View style={{flexDirection: "row", alignItems: "center"}}>
+          {action("skip-previous", "video.player.jumpToStart", onJumpToStart)}
+          {action(
+            paused ? "play-arrow" : "pause",
+            paused ? "video.player.play" : "video.player.pause",
+            onTogglePlay,
+          )}
+        </View>
+        <View style={{flexDirection: "row", alignItems: "center"}}>
+          {action(
+            "chat-bubble-outline",
+            "video.comments.title",
+            metadata.onShowComments,
+          )}
+          {action("bookmark-border", "video.action.save", metadata.onSaveVideo)}
+          {action("refresh", "video.player.reload", metadata.onRefresh)}
+          {subtitles
+            ? action(
+                selectedSubtitle ? "closed-caption" : "closed-caption-off",
+                "video.player.subtitles",
+                () => navigation.navigate("VideoPlayerSubtitles"),
+              )
+            : null}
+          {action("settings", "video.player.settings", () =>
+            navigation.navigate("VideoPlayerSettings"),
+          )}
+          {action(
+            "info",
+            "video.playbackInfo.title",
+            metadata.onShowPlaybackInfo,
+          )}
+        </View>
+      </TVFocusGuideView>
+    );
+  }
 
   return (
     <TVFocusGuideView autoFocus>

@@ -34,6 +34,7 @@ export interface AppSettings {
   sabrEnabled?: boolean;
   languageSelected?: string;
   uiLanguage?: UILanguage;
+  koreanTVMigration?: boolean;
   trackingEnabled?: boolean;
   /**
    * Whether the phone/tablet overlay player starts the next video on its own

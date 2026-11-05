@@ -78,7 +78,7 @@ export default function VideoScreen({route, navigation}: Props) {
   // TV needs app controls for comments and time-based remote seeking.
   const useAppControls =
     Platform.isTV || appSettings.ownOverlayEnabled || appSettings.vlcEnabled;
-  const {prepare: prepareSidePanel} = useVideoSidePanel();
+  const {prepare: prepareSidePanel, data: sidePanelData} = useVideoSidePanel();
   const {t} = useTranslation();
   const detailModel = useMemo(
     () =>
@@ -166,7 +166,13 @@ export default function VideoScreen({route, navigation}: Props) {
   const endscreen = YTVideoInfo.endscreen;
 
   return (
-    <View style={styles.playerRoot}>
+    <View
+      style={[
+        styles.playerRoot,
+        Platform.isTV && sidePanelData && sidePanelData.videoId === videoId
+          ? styles.panelVideo
+          : undefined,
+      ]}>
       {useAppControls ? (
         <VideoPlayer
           // @ts-ignore Ignore mutable ref issue
@@ -364,6 +370,14 @@ export default function VideoScreen({route, navigation}: Props) {
 }
 
 const styles = StyleSheet.create({
+  panelVideo: {
+    left: "2%",
+    right: "44%",
+    top: "20%",
+    bottom: "20%",
+    borderRadius: 24,
+    overflow: "hidden",
+  },
   // Letterboxing for non-16:9 videos must be black, not the theme surface
   // that would otherwise show through around the contained video.
   playerRoot: {

@@ -1,6 +1,10 @@
 import type {TranslationKey} from "./en";
 
 export const de = {
+  "settings.language.korean": "Koreanisch",
+  "media.badge.members": "Nur für Mitglieder",
+  "media.badge.earlyAccess": "Vorabzugriff für Mitglieder",
+
   "video.seek.previewUnavailable": "Keine Vorschau verfügbar",
   "video.seek.previewLoading": "Vorschau wird geladen…",
   "video.playbackInfo.title": "Wiedergabeinfo",

@@ -1,3 +1,5 @@
+import {Platform} from "react-native";
+
 import {AppSettings} from "../context/AppDataContext";
 
 interface Language {
@@ -6,6 +8,7 @@ interface Language {
 }
 
 export const languages: Language[] = [
+  {key: "ko", label: "한국어"},
   {
     key: "en",
     label: "English",
@@ -17,7 +20,12 @@ export const languages: Language[] = [
 ];
 
 export function parseLanguage(appSettings: AppSettings) {
+  const requested =
+    Platform.isTV && !appSettings.koreanTVMigration
+      ? "ko"
+      : (appSettings.languageSelected ?? "en");
   return (
-    languages.find(v => v.key === appSettings.languageSelected) ?? languages[0]
+    languages.find(v => v.key === requested) ??
+    languages.find(v => v.key === "en")!
   );
 }

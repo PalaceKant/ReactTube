@@ -22,6 +22,7 @@ import {
   parseLockupMetadataRows,
   parseLockupThumbnailBadges,
 } from "./lockupMetadata";
+import {getMembershipBadge} from "./membershipBadge";
 import {getTileResolutionBadge, parseTileMetadataLines} from "./tileMetadata";
 import Logger from "../utils/Logger";
 import {Helpers, YTNodes, Parser} from "../utils/Youtube";
@@ -84,7 +85,7 @@ export function getVideoDataOfFirstElement(
 
 // TODO: Rename to ElementData
 
-export function getVideoData(
+function extractVideoData(
   ytNode: Helpers.YTNode,
   suppressedError?: boolean,
 ): ElementData | undefined {
@@ -619,4 +620,20 @@ export function getVideoData(
   } else if (!suppressedError) {
     LOGGER.warn("getVideoData: Unknown type: ", ytNode.type);
   }
+}
+
+export function getVideoData(
+  ytNode: Helpers.YTNode,
+  suppressedError?: boolean,
+): ElementData | undefined {
+  const element = extractVideoData(ytNode, suppressedError);
+  if (
+    element &&
+    (element.type === "video" ||
+      element.type === "reel" ||
+      element.type === "mix")
+  ) {
+    element.membershipBadge = getMembershipBadge(ytNode);
+  }
+  return element;
 }

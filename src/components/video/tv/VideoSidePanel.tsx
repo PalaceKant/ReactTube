@@ -93,7 +93,11 @@ export function VideoSidePanel({
         autoFocus
         style={[styles.header, {gap: theme.spacing.md}]}>
         <AppText numberOfLines={2} style={styles.title} variant={"titleSmall"}>
-          {model.title}
+          {tab === "comments"
+            ? comments.count
+              ? t("video.comments.count", {count: comments.count})
+              : t("video.comments.title")
+            : model.title}
         </AppText>
         <AppIconButton
           accessibilityLabel={t("video.panel.close")}
@@ -142,6 +146,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     end: 0,
     width: "42%",
+    borderLeftWidth: 2,
+    borderLeftColor: "#3F3F3F",
   },
   header: {
     flexDirection: "row",

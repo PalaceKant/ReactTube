@@ -1,4 +1,4 @@
-export const supportedUILanguages = ["en", "de"] as const;
+export const supportedUILanguages = ["ko", "en", "de"] as const;
 
 export type UILanguage = (typeof supportedUILanguages)[number];
 

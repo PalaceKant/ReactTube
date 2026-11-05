@@ -1,4 +1,11 @@
-import React, {createContext, useCallback, useContext, useMemo} from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useEffect,
+} from "react";
+import {Platform} from "react-native";
 
 import type {TranslationKey} from "./en";
 import {
@@ -33,7 +40,17 @@ interface LocalizationProviderProps {
 export function LocalizationProvider({children}: LocalizationProviderProps) {
   const {appSettings, updateSettings} = useAppData();
   const language = getUILanguageFromSettings(appSettings);
-  const locale = language === "de" ? "de-DE" : "en-US";
+  useEffect(() => {
+    if (!appSettings.koreanTVMigration && Platform.isTV) {
+      updateSettings({
+        uiLanguage: "ko",
+        languageSelected: "ko",
+        koreanTVMigration: true,
+      });
+    }
+  }, [appSettings.koreanTVMigration, updateSettings]);
+  const locale =
+    language === "ko" ? "ko-KR" : language === "de" ? "de-DE" : "en-US";
 
   const setLanguage = useCallback(
     (nextLanguage: UILanguage) => {

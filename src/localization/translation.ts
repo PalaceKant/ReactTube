@@ -5,6 +5,7 @@ import {
 } from "./core";
 import {de} from "./de";
 import {en, type TranslationKey} from "./en";
+import {ko} from "./ko";
 import {type TranslationValues, type UILanguage} from "./types";
 
 export const defaultUILanguage: UILanguage = defaultCoreUILanguage;
@@ -12,6 +13,7 @@ export const defaultUILanguage: UILanguage = defaultCoreUILanguage;
 const translations: Record<UILanguage, Record<TranslationKey, string>> = {
   en,
   de,
+  ko,
 };
 
 export function getUILanguageFromSettings(settings: {
